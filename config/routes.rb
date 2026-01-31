@@ -12,5 +12,8 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
+  root "pages#top"
+
+  # api用（Reactからのみ使用）
   resources :records, only: [:create], defaults: { format: :json }
 end
