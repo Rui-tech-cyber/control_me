@@ -1,0 +1,10 @@
+ja:
+  activerecord:
+    attributes:
+      record:
+        category:
+          study: "学習"
+          weight: "体重"
+          training: "トレーニング"
+          accounting: "帳簿"
+          sleeping: "睡眠"

@@ -10,28 +10,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_31_042345) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_01_052641) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "memos", force: :cascade do |t|
-    t.bigint "record_id", null: false
-    t.text "body"
-    t.datetime "deleted_at"
+  create_table "entries", force: :cascade do |t|
+    t.integer "category", null: false
+    t.decimal "value", precision: 8, scale: 2, null: false
+    t.datetime "recorded_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["record_id"], name: "index_memos_on_record_id"
+    t.index ["category"], name: "index_entries_on_category"
+    t.index ["recorded_at"], name: "index_entries_on_recorded_at"
   end
 
-  create_table "records", force: :cascade do |t|
-    t.bigint "user_id", null: false
-    t.date "record_date"
-    t.integer "value"
-    t.string "category"
-    t.datetime "deleted_at"
+  create_table "memos", force: :cascade do |t|
+    t.bigint "entry_id", null: false
+    t.string "content", limit: 100
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_records_on_user_id"
+    t.index ["entry_id"], name: "index_memos_on_entry_id", unique: true
   end
 
   create_table "users", force: :cascade do |t|
@@ -47,6 +45,5 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_31_042345) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
-  add_foreign_key "memos", "records"
-  add_foreign_key "records", "users"
+  add_foreign_key "memos", "entries"
 end
