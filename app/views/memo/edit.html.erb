@@ -1,0 +1,10 @@
+<h2>メモを編集</h2>
+
+<%= form_with model: [@entry, @entry.memo || @entry.build_memo], local: true do |f| %>
+    <div>
+        <%= f.label :content, "ひとことメモ(100字まで)" %><br>
+        <%= f.text_area :content, maxlength: 100, rows: 3 %>
+    </div>
+
+    <%= f.submit "保存" %>
+<% end %>

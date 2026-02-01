@@ -1,0 +1,45 @@
+<!-- 後で直書きのstyleをそれ専用のCSSにする -->
+<h1>controlMe</h1>
+<h3>今日：<%= Time.zone.today.strftime("%Y-%m-%d") %></h3>
+
+<%= form_with model: @entry, local: true do |f| %>
+    <div>
+        <%= f.label  :category, "カテゴリ" %>
+        <%= f.select :category, @categories.map { |c| [Entry.human_attribute_name("category.#{c}"), c]} ,{}, { id: "entry_category" } %>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <%= f.number_field :value, step: 0.01, id: "entry_value", placeholder: "数値を入力", style: "font-size: 2rem; padding: 0.5rem; width: 70%;" %>
+        <span id="value_unit" style="font-size: 1.5rem;"></span>
+    </div>
+
+    <%= f.submit "保存", style: "font-size: 1.5rem; padding: 0.5rem 1rem;" %>
+<% end %>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const select = document.getElementById("entry_category");
+    const unitSpan = document.getElementById("value_unit");
+
+    // カテゴリごとの単位マップ
+    const unitMap = {
+        study: "時間",
+        weight: "kg",
+        training: "回",
+        accounting: "円",
+        sleeping: "時間"
+    };
+
+    // 単位表示更新関数
+    function updateUnit() {
+        const category = select.value;
+        unitSpan.textContent = unitMap[category] || "";
+    }
+
+    // 初期表示
+    updateUnit();
+
+    // 選択変更時に単位更新
+    select.addEventListener("change", updateUnit);
+});
+</script>
