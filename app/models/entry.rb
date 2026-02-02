@@ -7,6 +7,18 @@ class Entry < ApplicationRecord
         sleeping: 4
     }
 
+    UNIT_MAP = {
+        "study" => "時間",
+        "weight" => "kg",
+        "training" => "回",
+        "accounting" => "円",
+        "sleeping" => "時間"
+    }.freeze
+
+    def unit
+        UNIT_MAP[category]
+    end
+    
     validates :category, presence: true
     validates :value, presence: true
     validates :recorded_at, presence: true

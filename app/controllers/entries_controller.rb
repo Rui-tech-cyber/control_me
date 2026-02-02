@@ -17,9 +17,62 @@ class EntriesController < ApplicationController
     end
   end
 
+  def index
+    @period = params[:period].presence || "week"
+    @category = params[:category].presence || Entry.categories.keys.first
+
+    base_scope = Entry.where(category: @category)
+
+    @entries = case @period
+                when "week"
+                  base_scope.where(recorded_on: 6.days.ago.to_date..Date.today)
+                when "month"
+                  base_scope.where(recorded_on: Date.today.beginning_of_month..Date.today)
+                when "all"
+                  base_scope
+                else
+                  base_scope
+                end
+
+      @entries = @entries.order(recorded_on: :desc, created_at: :desc)
+
+      prepare_entries_for_view
+      prepare_graph_data
+      prepare_recent_memos
+    end
+
   private
 
   def entry_params
     params.require(:entry).permit(:category, :value)
   end
+
+  def prepare_entries_for_view
+    entries_for_list = 
+      if @period == "all"
+        @entries.limit(100) #直近100件
+      else
+        @entries
+      end
+
+    @entries_by_date = entries_for_list.group_by(:recorded_on)
+  end
+
+  def prepare_graph_data
+    @unit = Entry::UNIT_MAP[@category]
+
+    @graph_data = case @period
+                  when "week", "month"
+                    @entries.group(:recorded_on).sum(:value).sort
+                  when "all"
+                    @entries.group("DATE_TRUNC('month', recorded_on)").sum(:value).sort
+                  else
+                    {}
+                  end
+  end
+
+  def prepare_recent_memos
+    @recent_memos = Memo.joins(:record).where(records: { category: @category }).where.not(body: [nil, ""]).order(update_at: :desc).limit(5)
+  end
+
 end
