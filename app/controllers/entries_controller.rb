@@ -59,20 +59,35 @@ class EntriesController < ApplicationController
   end
 
   def prepare_graph_data
-    @unit = Entry::UNIT_MAP[@category]
+  @unit = Entry::UNIT_MAP[@category]
 
-    @graph_data = case @period
-                  when "week", "month"
-                    @entries.group(:recorded_at).sum(:value).sort
-                  when "all"
-                    @entries.group("DATE_TRUNC('month', recorded_at)").sum(:value).sort
-                  else
-                    {}
-                  end
-  end
+  graph_scope = Entry.where(category: @category)
+
+  graph_scope =
+    case @period
+    when "week"
+      graph_scope.where(recorded_at: 6.days.ago.beginning_of_day..Time.current)
+    when "month"
+      graph_scope.where(recorded_at: Time.current.beginning_of_month..Time.current)
+    when "all"
+      graph_scope
+    else
+      graph_scope
+    end
+
+  @graph_data =
+    case @period
+    when "week", "month"
+      graph_scope.group("DATE(recorded_at)").sum(:value).sort
+    when "all"
+      graph_scope.group("DATE_TRUNC('month', recorded_at)").sum(:value).sort
+    else
+      {}
+    end
+end
 
   def prepare_recent_memos
-    @recent_memos = Memo.joins(:entry).where(entries: { category: @category }).where.not(body: [nil, ""]).order(update_at: :desc).limit(5)
+    @recent_memos = Memo.joins(:entry).where(entries: { category: @category }).where.not(content: [nil, ""]).order(updated_at: :desc).limit(5)
   end
 
 end

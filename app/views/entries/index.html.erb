@@ -1,0 +1,87 @@
+<h1>履歴</h1>
+
+<!-- フィルタ（期間 / カテゴリ）-->
+<div class="entries-filters">
+    <%= form_with url: entries_path, method: :get, local: true do %>
+        <div class="filters-row">
+            <div class="filter">
+                <label>期間</label>
+                <%= select_tag :period, options_for_select( [["週", "week"], ["月", "month"], ["全期間", "all"]] ,@period), onchange: "this.form.submit()" %>
+            </div>
+
+            <div class="filter">
+            <label>カテゴリ</label>
+                <%= select_tag :category, options_for_select(Entry.categories.keys.map { |k| [k.humanize, k] }, @category), onchange: "this.form.submit()" %>
+            </div>
+        </div>
+    <% end %>
+</div>
+
+<hr>
+
+<!-- グラフ表示エリア -->
+<div class="entries-graph">
+    <h2><%= @category.humanize %>（<%= @unit %>）</h2>
+
+    <!-- JSで後から描画 -->
+    <canvas id="entries-chart" width="400" height="200"></canvas>
+
+    <!-- グラフ用データ（JS受け渡し） -->
+    <script>
+        window.graphData = <%= raw @graph_data.to_json %>;
+        window.graphUnit = "<%= @unit %>";
+        window.graphPeriod = "<%= @period %>";
+    </script>
+</div>
+
+<hr>
+
+<!-- Entry 一覧（1日ごと）-->
+<div class="entries-list">
+    <% if @entries_by_date.present? %>
+        <% @entries_by_date.each do |date, entries| %>
+            <div class="entries-date-group">
+                <h3> <%= date.strftime("%Y-%m-%d") %></h3>
+
+                <% entries.each do |entry| %>
+                    <div class="entry-item">
+                        <span class="entry-value <%= entry.category %>">
+                            <strong><%= entry.value %> <%= entry.unit %></strong>
+                        </span>
+
+                        <% if entry.memo&.content.present? %>
+                            <div class="entry-memo">
+                                メモ：<%= entry.memo.content %>
+                            </div>
+                        <% end %>
+                    </div>
+                <% end %>
+            </div>
+        <% end %>
+    <% else %>
+        <p>この期間の記録はありません。</p>
+    <% end %>
+</div>
+
+<hr>
+
+<!-- 直近メモ5件 -->
+<!-- あくまで記録に対してのメモなので、普通のメモ欄はいらないかも -->
+<div class="recent-memos">
+    <h2>最近のひとこと</h2>
+
+    <% if @recent_memos.present? %>
+        <ul>
+            <% @recent_memos.each do |memo| %>
+                <li>
+                    <span class="memo-date">
+                        <%= memo.updated_at.strftime("%Y-%m-%d") %>
+                    </span>
+                        ：<%= memo.content %>
+                </li>
+            <% end %>
+        </ul>
+    <% else %>
+        <p>まだメモはありません。</p>
+    <% end %>
+</div>
